@@ -7,6 +7,7 @@
 #include "timer.h"
 #include "LPC11xx.h"
 #include <math.h>
+#include "bluetooth.h"
 
 #define LATITUDE 0 
 #define LONGITUDE 1
@@ -18,6 +19,7 @@
 #define RMC_LONGITUDE 5
 #define RMC_E_W 6
 #define RMC_SPEED 7
+#define RMC_BEARING 8 
 
 #define RMC_ONLY "$PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29\r\n"
 
@@ -26,13 +28,14 @@
 /* Holds our NMEA sentences */
 static char buffer[BUFFER_MAX];
 static int currBufferLen;
-static location_t currLocation = {.status = invalid,  .latitude = 0.0, .longitude = 0.0, .speed = 0.0};
+static location_t currLocation = {.status = invalid,  .latitude = 0.0, .longitude = 0.0, .speed = 0.0, .bearing = 0.0};
 static unsigned int gpsStatus = 0;
+static unsigned int gpsReadSuccess = 0;
 
 // TODO: Integrate database stuff into this file.
 // TODO: Change parsing code to utilize strchr for searching for delimiters
 
-
+// Getters and setters
 unsigned int getGPSstatus(void){
     return gpsStatus;
 }
@@ -41,16 +44,26 @@ void resetGPSstatus(void){
     gpsStatus = 0;
 }
 
+unsigned int getGPSreadSuccess(void){
+    return gpsReadSuccess;
+}
+
+void resetGPSreadSuccess(void){
+    gpsReadSuccess = 0;
+}
+
 location_t getCurrLocation(void){
     return currLocation;
 }
 
+// Main functions
 int GPS_init(void){
     char c;
     char* s = RMC_ONLY;
     // Set GPS to only output RMC messages
     // Might need to wait a second for things to boot up before we send a message
     threadWait(48000000);
+    
     if(UART_write_string(s) != 0){
         return -1;
     }
@@ -83,20 +96,24 @@ int GPS_init(void){
 
 void readGPS(void){
     // Read message into buffer
+    toggleLED();
+    
     if(readNMEA() == -1){
         memset(buffer, 0, sizeof(char)*BUFFER_MAX);
         currBufferLen = 0;
         return;
     }
-    UART_write_string(buffer);
+
     // Verify checksum
     if (verifyChecksum() != 0){
         memset(buffer, 0, sizeof(char)*BUFFER_MAX);
         currBufferLen = 0;
-        printf("Didn't pass checksum\r\n");
         return;
     }
-    printf("Passed checksum\r\n");
+    // Flag that we have a successful read for debugging purposes
+    gpsReadSuccess = 1;
+    return;
+    
     // Parse message
     if (parseNMEA() != 0){
         memset(buffer, 0, sizeof(char)*BUFFER_MAX);
@@ -105,11 +122,12 @@ void readGPS(void){
     }
     
     if(gpsStatus == 1){
-        printf("GPS status not reset yet\r\n");   
+        //printf("GPS status not reset yet\r\n");   
     }
     else{
         gpsStatus = 1;
     }
+    
     // Reset static variables
     memset(buffer, 0, sizeof(char)*BUFFER_MAX);
     currBufferLen = 0;
@@ -137,13 +155,17 @@ void printLocation(void){
     return;
 }
 
+void blePrintBuffer(void){
+    bleWriteUART(buffer, currBufferLen-1);
+}
+
 void testNMEA(void){
     // Load test string
     strcpy(buffer, "$GPRMC,064951.000,A,2307.1256,N,12016.4438,E,0.03,165.48,260406,3.05,W,A*2C\r\n");
     currBufferLen = strlen(buffer) + 1;
     
     if (verifyChecksum() != 0){
-        printf("Didn't pass checksum\r\n");
+        // printf("Didn't pass checksum\r\n");
         memset(buffer, 0, sizeof(char)*BUFFER_MAX);
         currBufferLen = 0;
         return;
@@ -151,13 +173,13 @@ void testNMEA(void){
     printf("Passed checksum\r\n");
     // Parse message
     if (parseNMEA() != 0){
-        printf("Failed at parseNMEA\r\n");
+        // printf("Failed at parseNMEA\r\n");
         memset(buffer, 0, sizeof(char)*BUFFER_MAX);
         currBufferLen = 0;
         return;
     }
     
-    printf("Test passed\r\n");
+    // printf("Test passed\r\n");
     
     // Reset static variables
     memset(buffer, 0, sizeof(char)*BUFFER_MAX);
@@ -199,15 +221,17 @@ static int readNMEA(void){
             buffer[idx++] = c;
             // Check for second later of termination sequence
             if(c == '\n'){
-                break;
+                //break;
+                buffer[idx++] = '\0';
+    
+                // At this point, buffer should contain valid NMEA sentence. We return the length of the sentence (including null at the end);
+                currBufferLen = idx;
+                return idx;
             }
         }
     }
-    buffer[idx++] = '\0';
-    
-    // At this point, buffer should contain valid NMEA sentence. We return the length of the sentence (including null at the end);
-    currBufferLen = idx;
-	return idx;
+    // We've hit the end of our buffer
+    return -1;
     
 }
 
@@ -382,6 +406,25 @@ static int parseRMC(void){
                     offset = 0;
                     // Skip the rest of the loop so that we don't increment the index again
                     continue;                    
+                }
+                case RMC_BEARING:{
+                    //printf("Beginning of RMC_LONGITUDE\r\n");
+                    // Search for end delimiter while adding current character to a temp buffer
+                    while(buffer[idx+offset] != ','){
+                        temp_buffer[offset] = buffer[idx+offset];
+                        offset++;
+                    }
+                    temp_buffer[offset] = '\0';
+                    // At this point, the string form of the bearing will be loaded into temp buffer
+                    // Simply store bearing without further processing
+                    currLocation.bearing = simple_strtod(temp_buffer);
+                    // Set index to the end delimeter we found
+                    idx = idx + offset;
+                    // Clear temp buffer and offset
+                    memset(temp_buffer, 0, sizeof(char)*temp_buffer_size);
+                    offset = 0;  
+                    // Skip the rest of the loop so that we don't increment the index again
+                    continue;
                 }
             }   
         }

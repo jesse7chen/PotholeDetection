@@ -2,10 +2,10 @@
 #include "LPC11xx.h"
 #include "stdint.h"
 #include "stdio.h"
+#include "bluetooth.h"
 
 #define NUM_BUTTONS 1
 #define REPORT 0
-#define DEBUG
 
 static int lastButtonPressed = -1;
 
@@ -47,13 +47,9 @@ int readButtons(void){
             if(lastButtonPressed == -1){
                 lastButtonPressed = button;
             }
-#ifdef DEBUG
-            printf("Button %d pressed\r\n", button);
-#endif
             return button;
         }
     }
-
     return -1;
 }
 

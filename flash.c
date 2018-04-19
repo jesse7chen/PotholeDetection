@@ -19,11 +19,13 @@ static IAP iap_entry = (IAP)IAP_LOCATION;
 int writeFlash(unsigned int dest, unsigned int source, unsigned int numBytes){
     // Prepare flash to be written
     unsigned int startSec = dest/4096;
-    unsigned int endSec = (dest+numBytes)/4096;
+    // We subtract 1 because we need to count our starting byte in number of bytes we write.
+    // Ex. If we write at address 0x7100, 256 bytes, then we write up to 0x71FF, not to 0x7200
+    unsigned int endSec = (dest+numBytes-1)/4096;
     
     
     if(prepareWrite(startSec, endSec)!= CMD_SUCCESS){
-        printf("Error preparing flash write\r\n");
+        //printf("Error preparing flash write\r\n");
         return -1;
     }
         
@@ -37,6 +39,7 @@ int writeFlash(unsigned int dest, unsigned int source, unsigned int numBytes){
     
     iap_entry(command_params, status_result);
     
+    printFlashStatus(status_result[0]);
     return status_result[0];
 }
 
@@ -65,6 +68,7 @@ static int prepareWrite(unsigned int startSec, unsigned int endSec){
     
     iap_entry(command_params, status_result);
     
+    printFlashStatus(status_result[0]);
     return status_result[0];
 }
 

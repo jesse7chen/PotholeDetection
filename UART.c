@@ -49,8 +49,8 @@ int UART_read(char* c){
     
     */
     
-    // Setup time out timer for UART reads (currently 5ms)
-    timer_init(240000);
+    // Setup time out timer for UART reads (currently 100ms)
+    timer_init(4800000);
     timerStart();
     // Code for blocking read with timeout
     while (!(LPC_UART->LSR & 0x01)){

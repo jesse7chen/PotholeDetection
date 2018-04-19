@@ -11,24 +11,34 @@ typedef struct location_t
     double latitude;
     double longitude;
     double speed;
+    double bearing;
     locationStatus status;
 } location_t;
 
-
+// Main functions
 int GPS_init(void);
 
 void readGPS(void);
 
+// Getters and setters
 void resetGPSstatus(void);
 
 unsigned int getGPSstatus(void);
 
+unsigned int getGPSreadSuccess(void);
+
+void resetGPSreadSuccess(void);
+
 location_t getCurrLocation(void);
 
+// Test/debugging functions
 void testNMEA(void);
 
 void printLocation(void);
 
+void blePrintBuffer(void);
+
+// Static helper functions
 static double simple_strtod(const char* str);
 
 static int readNMEA(void);

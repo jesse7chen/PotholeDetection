@@ -11,5 +11,6 @@ int getTimerStatus(void);
 
 void threadWait(int ticks);
 
+//void delayedExecute(void (*desired_function)(void), int ticks);
 
 #endif /* _TIMER_H_ */

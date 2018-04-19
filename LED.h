@@ -1,9 +1,10 @@
 #ifndef _LED_H_
 #define _LED_H_
 
-void configureGPIO(void);
+void ledInit(void);
 void ledOn(void);
 void ledOff(void);
+void toggleLED(void);
 
 
 

@@ -32,8 +32,6 @@ int sendSDEP(uint8_t msgType, uint16_t cmdID, uint8_t len, uint8_t* payload);
 
 int sendMultSDEP(uint8_t msgType, uint16_t cmdID, uint8_t len, uint8_t* payload);
 
-static uint8_t reverse(uint8_t n);
-
 int bleWriteLocation(location_t loc);
 
 #endif /* _BLUETOOTH_H_ */

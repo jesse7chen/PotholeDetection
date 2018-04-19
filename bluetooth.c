@@ -15,6 +15,7 @@ The SPI commands must be setup to transmit MSB (most significant bit) first (not
 
 #define CS_PIN 2 // Pin is 0_2
 
+/*
 // Code to reverse bitstring
 static const unsigned char lookup[16] = {
 0x0, 0x8, 0x4, 0xc, 0x2, 0xa, 0x6, 0xe,
@@ -24,6 +25,7 @@ static uint8_t reverse(uint8_t n) {
    // Reverse the top and bottom nibble then swap them.
    return (lookup[n&0xf] << 4) | (lookup[n>>4]);
 }
+*/
 
 int bleInit(void){
     //set port 0_2 to output, as that is our chip select
@@ -34,13 +36,14 @@ int bleInit(void){
     // Switch module to data mode (doesn't matter actually)
     //bleSendAT(AT_SWITCH_MODE, AT_SWITCH_MODE_LEN);
 
-    threadWait(24000000);
+    //threadWait(24000000);
     
     return 0;
 }
 
 int bleWriteLocation(location_t loc){
     char tempBuffer[120];
+    //char* tempBuffer = "Latitude: 40.110590\r\nLongitude: -88.229039\r\nSpeed: 0.03896\r\n";
     int len;
     switch(loc.status){
         case(valid):{
@@ -56,9 +59,11 @@ int bleWriteLocation(location_t loc){
             break;
         }
     }
-    sprintf(tempBuffer, "Latitude: %f\r\nLongitude: %f\r\nSpeed: %f\r\n", loc.latitude, loc.longitude, loc.speed);
+    sprintf(tempBuffer, "Latitude: %f\r\nLongitude: %f\r\nSpeed: %f\r\nBearing: %f\r\n", loc.latitude, loc.longitude, loc.speed, loc.bearing);
+    //sprintf(tempBuffer, "Latitude: %g\r\nLongitude: %g\r\nSpeed: %g\r\n", loc.latitude, loc.longitude, loc.speed);
+    //sprintf(tempBuffer, "Double size: %d\r\n, float size: %d\r\n", sizeof(double), sizeof(float));
     len = strlen(tempBuffer);
-    return bleWriteUART(tempBuffer, len);
+    return bleWriteUART(tempBuffer, len);  
 }
 
 int bleWriteUART(char* s, uint8_t len){
@@ -116,10 +121,10 @@ int sendMultSDEP(uint8_t msgType, uint16_t cmdID, uint8_t len, uint8_t* payload)
            // If length greater than 16, set len to 16 and set flag to show that more packets are coming
            packetLen = (16 | (1UL << 7));
        }
+      // Wait 4ms before sending packet. Not sure why, but it works!
+       threadWait(192000);
        sendSDEP(msgType, cmdID, packetLen, payload+(len-bytesLeft));
        bytesLeft -= 16;
-       // Wait 4ms before sending next one, if there is one. Not sure why, but it works!
-       if (bytesLeft > 0) threadWait(192000);
     }
     
     return retVal;

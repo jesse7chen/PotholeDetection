@@ -1,7 +1,9 @@
 #include "LED.h"
 #include "LPC11xx.h"
 
-void configureGPIO(void)
+static unsigned int ledStatus = 0;
+
+void ledInit(void)
 {
 
 	//set port 0_7 to output (high current drain in LPC1114)
@@ -18,4 +20,15 @@ void ledOn(void)
 void ledOff(void)
 {						 
 	LPC_GPIO0->DATA |= (1<<7);
+}
+
+void toggleLED(void){
+    if(ledStatus){
+        ledOff();
+        ledStatus = 0;
+    }
+    else{
+        ledOn();
+        ledStatus = 1;
+    }
 }
