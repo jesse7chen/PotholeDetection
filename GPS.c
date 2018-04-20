@@ -21,8 +21,8 @@
 #define RMC_SPEED 7
 #define RMC_BEARING 8 
 
-#define RMC_ONLY "$PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29\r\n"
-//#define RMC_ONLY "$PMTK314,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*2A\r\n"
+//#define RMC_ONLY "$PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29\r\n"
+#define RMC_ONLY "$PMTK314,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*2A\r\n"
 #define SET_BAUDRATE "$PMTK251,57600*2C\r\n"
 //#define SET_BAUDRATE "$PMTK251,115200*1F\r\n"
 
@@ -196,7 +196,7 @@ void processGPS(void){
     
     // Flag that we have a successful checksum for debugging purposes
     // gpsReadSuccess = 1;
-    bleWriteUART("Read success\r\n", 14);
+    //bleWriteUART("Read success\r\n", 14);
     
     // Parse message
     if (parseNMEA() != 0){

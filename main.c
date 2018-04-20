@@ -1,3 +1,6 @@
+#include <string.h>
+#include <stdio.h>
+
 #include "GPS.h"
 #include "UART.h"
 #include "LPC11xx.h"
@@ -6,8 +9,6 @@
 #include "SPI.h"
 #include "bluetooth.h"
 #include "flash.h"
-#include "string.h"
-#include "stdio.h"
 #include "timer.h"
 #include "stopwatch.h"
 #include "database.h"
@@ -70,17 +71,21 @@ int main(){
     static uint8_t potEnc = 0; // Set when pothole is about to be encountered (database check)
     static uint8_t potDet = 0; // Set when pothole is detected by button or accelerometer
     static uint8_t potDet_cv = 0; // Set when pothole is detected by computer vision
-    static uint8_t canDet = 0; // Set when a pothole has not been detected recently
+    static uint8_t canDet = 1; // Set when a pothole has not been detected recently
     
-    UART_init();
-    GPS_init();
+    static char temp_buffer[50];
+    
+    //UART_init();
+    //GPS_init();
     ledInit();
     ledOff();
     buzzerInit();
     SPI_init();
     bleInit();
-    initButtons();
+    //initButtons();
     cameraDetectInit();
+    
+    threadWait(240000000);
     
     configure_i2c();
     init_accelerometer();
@@ -91,8 +96,8 @@ int main(){
     stopwatchInit();
 #endif
 
-    // Set GPS interrupt priority
-    NVIC_SetPriority(TIMER_32_0_IRQn, 0);
+    // Set accelerometer interrupt priority
+    NVIC_SetPriority(TIMER_32_0_IRQn, 1);
     // Set button interrupt priority
     NVIC_SetPriority(TIMER_16_1_IRQn, 1);
     // Set timer interrupt priority
@@ -108,6 +113,8 @@ int main(){
     
     while(1){
 #ifdef DEMO
+        //sprintf(temp_buffer, "%f\r\n", getListVal(0));
+        //bleWriteUART(temp_buffer, strlen(temp_buffer));
         
         // Process waiting GPS message
         if(getGPSreadStatus() == MSG_READY){
@@ -118,7 +125,7 @@ int main(){
                 resetGPSstatus();
                 temp_location = getCurrLocation();
                 // Write location to BLE for debugging
-                bleWriteLocation(temp_location);                  
+                // bleWriteLocation(temp_location);                  
                 // Search database (potEnc)
                 if (searchDatabase(temp_location) == 1){
                     bleWriteUART("Pothole near\r\n", 14); 

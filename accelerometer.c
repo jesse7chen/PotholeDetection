@@ -1,10 +1,13 @@
 #include "accelerometer.h"
 #include "i2c.h"
+#include "bluetooth.h"
+#include "string.h"
 
 static uint8_t data_int = 0;
 static int curr_int;
 static float list[3];
 static uint8_t potholeDetected = 0;
+static char temp_buffer[20];
 
 #define ACCEL_ADDRESS_W 0x98
 #define ACCEL_ADDRESS_R 0x99
@@ -14,6 +17,10 @@ static uint8_t potholeDetected = 0;
 #define THRESHOLD .5
 
 #define ACCEL_SENSITIVITY 0.047
+
+float getListVal(int idx){
+    return list[idx];
+}
 
 void init_accelerometer(void)
 {
@@ -67,6 +74,8 @@ void TIMER32_0_IRQHandler(void)
 	uint8_t data;
 	data = accel_readregister(0x02);
 	list[curr_int] = data_convert(data);
+    sprintf(temp_buffer, "%d\r\n", data);
+    bleWriteUART(temp_buffer, strlen(temp_buffer));
 	
 //	if(prev_int == 1 || curr_int == 2)
 //	{
@@ -174,9 +183,9 @@ uint8_t accel_readregister(uint8_t reg)
 			
 		write_address(ACCEL_ADDRESS_R, 1);
 		
-		for(int i = 0; i < 0xFFFF; i++)
-		{
-		}
+//		for(int i = 0; i < 0xFFFF; i++)
+//		{
+//		}
 	
 		data = read_byte();
 		LPC_I2C->CONSET |= 0x10;

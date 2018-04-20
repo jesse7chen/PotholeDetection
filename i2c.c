@@ -1,4 +1,5 @@
 #include "i2c.h"
+#include "bluetooth.h"
 
 #define ACCEL_ADDRESS_W 0x98
 #define ACCEL_ADDRESS_R 0x99
@@ -77,12 +78,13 @@ void write_byte(uint8_t byte)
 	
 	if(status == 0x28) // Byte sent correctly
 	{
+        //bleWriteUART("Success write\r\n", 14);
 		//printf("Success Write \n\r");
 		return;
 	}
 	else
 	{
-		printf("WRITE ERR: 0x%04x \n\r", status);
+		//printf("WRITE ERR: 0x%04x \n\r", status);
 		return;
 	}
 }
@@ -115,14 +117,15 @@ uint8_t read_byte(void)
 		
 	if(status == 0x58) // Byte sent correctly NACK Sent
 	{
+        //bleWriteUART("Success read\r\n", 14);
 		//printf("Success Read \n\r");
 		//printf("DATA: %d \n\r", byte);
 		return byte;
 	}
 	else
 	{
-		printf("READ ERR: 0x%04x \n\r", status);
-		printf("ERR DATA: %d \n\r", byte);
+		//printf("READ ERR: 0x%04x \n\r", status);
+		//printf("ERR DATA: %d \n\r", byte);
 		return 0;
 	}
 }

@@ -45,6 +45,7 @@ int bleWriteLocation(location_t loc){
     char tempBuffer[120];
     //char* tempBuffer = "Latitude: 40.110590\r\nLongitude: -88.229039\r\nSpeed: 0.03896\r\n";
     int len;
+    /*
     switch(loc.status){
         case(valid):{
             bleWriteUART("Valid\r\n", 7);
@@ -58,7 +59,7 @@ int bleWriteLocation(location_t loc){
             bleWriteUART("Stale\r\n", 7);
             break;
         }
-    }
+    }*/
     sprintf(tempBuffer, "Latitude: %f\r\nLongitude: %f\r\n", loc.latitude, loc.longitude);
     //sprintf(tempBuffer, "Latitude: %f\r\nLongitude: %f\r\nSpeed: %f\r\nBearing: %f\r\n", loc.latitude, loc.longitude, loc.speed, loc.bearing);
     //sprintf(tempBuffer, "Latitude: %g\r\nLongitude: %g\r\nSpeed: %g\r\n", loc.latitude, loc.longitude, loc.speed);
