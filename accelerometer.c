@@ -8,7 +8,7 @@ static uint8_t potholeDetected = 0;
 
 #define ACCEL_ADDRESS_W 0x98
 #define ACCEL_ADDRESS_R 0x99
-#define PRESCALE (480000-1) //48000 PCLK clock cycles to increment TC by 1 
+#define PRESCALE (400000-1) //48000 PCLK clock cycles to increment TC by 1 
 
 #define ACCEL_SENSITIVITY 0.047
 #define THRESHOLD .5
