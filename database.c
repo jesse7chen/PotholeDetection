@@ -140,6 +140,7 @@ int insertLocation(location_t loc){
         return -1;
     }
     
+    
     // We operate in pages of 256 bytes, so load in any potholes that are on our page
     page = databaseIdx/16;
     entry_num = databaseIdx % 16;
@@ -149,6 +150,11 @@ int insertLocation(location_t loc){
     // Add in our pothole
     data[entry_num].latitude = loc.latitude;
     data[entry_num].longitude = loc.longitude;
+    
+    // If distance between this pothole and the one we just saw is less than 5 m, don't bother recording it again
+    if(distBetweenLocs(previousPothole, data[entry_num]) < 5){
+        return -1;
+    }
     
     // Set rest of data to 0xFF, so we don't set any more flash bits to 0 than we need to (otherwise we have to rewrite entire block)
     // Only do this if we're not on the last entry of the page
