@@ -71,11 +71,11 @@ void resetGPSbuffer(void){
     memset(buffer, 0, sizeof(char)*BUFFER_MAX);
     currBufferLen = 0;
     currIdx = 0;
+    gpsReadStatus = START_CHAR;
 }
 
 // Main functions
 int GPS_init(void){
-    char c;
     char* s = RMC_ONLY;
     // Set GPS to only output RMC messages
     // Might need to wait a second for things to boot up before we send a message
@@ -96,7 +96,6 @@ int GPS_init(void){
     threadWait(2400000);
     // Set our own baudrate to 57600
     // Enable divisor latches
-    
     LPC_UART->LCR = 0x83;  
     
     // Setting baud rate to be 57600
@@ -108,11 +107,7 @@ int GPS_init(void){
     // Disable divisor latches now that baudrate is set. Need to do this to access receive and transmit buffers
     LPC_UART->LCR = 0x03;
     
-    
-    
-
     // Clear RX buffer only
-    //while(UART_read(&c) != -1);
     LPC_UART->FCR = 0x03;
     
     /*
@@ -137,8 +132,7 @@ int GPS_init(void){
     memset(buffer, 0, sizeof(char)*BUFFER_MAX);
     currBufferLen = 0;
     
-    
-/* Finalize UART stuff */
+/* Finalize UART interrupts */
     // Enable RX data available interrupt
     LPC_UART->IER = (1UL);
     // Set UART interrupt priority
@@ -167,8 +161,7 @@ void readGPS(void){
     }
     
     // Flag that we have a successful read for debugging purposes
-    gpsReadSuccess = 1;
-    return;
+    //gpsReadSuccess = 1;
     
     // Parse message
     if (parseNMEA() != 0){

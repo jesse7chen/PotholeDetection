@@ -6,5 +6,6 @@ void TIMER32_1_IRQHandler(void);
 void TIMER16_0_IRQHandler(void);
 void TIMER16_1_IRQHandler(void);
 void UART_IRQHandler(void);
+void PIOINT1_IRQHandler(void);
 
 #endif /* _BSP_H_ */

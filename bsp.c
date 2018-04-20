@@ -8,6 +8,7 @@
 #include "button.h"
 #include "config.h"
 #include "stopwatch.h"
+#include "camera_detect.h"
 
 void TIMER32_0_IRQHandler(void){
     /* Check which match register triggered the interrupt here */
@@ -78,5 +79,16 @@ void UART_IRQHandler(void){
     }
     
     NVIC_ClearPendingIRQ(UART_IRQn);
+}
+
+void PIOINT1_IRQHandler(void){
+    // GPIO pin interrupt, looking for interrupt on PIO1_2 (camera detected pothole)
+    
+    if((LPC_GPIO1->MIS & (1UL << 2)) == 1){
+        // Camera has detected something
+        setCameraDetect(1);
+    }
+    
+    NVIC_ClearPendingIRQ(EINT1_IRQn);
 }
 

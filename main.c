@@ -13,27 +13,21 @@
 #include "database.h"
 #include "button.h"
 #include "buzzer.h"
-
-#include "test_database.h"
+#include "camera_detect.h"
 
 #include "config.h"
 
+#ifdef DATABASE_TEST
+    #include "test_database.h"
+#endif
+
+
 #define TEST_P 0x00007000
 
-// Allow 40 bytes for variable length parameters
+// Allow 40 bytes for variable length parameters (though the compiler says this apparently doesn't do anything)
 #pragma maxargs (40) 
 
 extern void SER_init (void);
-
-
-/*void databaseTimeTest(void){
-    static database_loc_t loc1 = {.latitude = 40.116520, .longitude = -88.229346};
-    static database_loc_t loc2 = {.latitude = 40.110579, .longitude = -88.229046};
-    double dist;
-    dist = bearingBetweenLocs(loc1, loc2);
-    
-    printf("Dist: %f\r\n", dist);   
-}*/
 
 
 void flashTest(void){
@@ -50,7 +44,7 @@ void flashTest(void){
 
 int main(){
     
-    int i = 0;
+    //int i = 0;
     /*
     char* s = "$GPRMC,064951.000,A,2307.1256,N,12016.4438,E,0.03,165.48,260406,3.05,W,A*2C\r\n";
     int len = strlen(s);
@@ -65,7 +59,7 @@ int main(){
     static double time;
     */
     
-    database_loc_t temp_database_loc;
+    //database_loc_t temp_database_loc;
     location_t temp_location;
     
     UART_init();
@@ -76,6 +70,7 @@ int main(){
     SPI_init();
     bleInit();
     initButtons();
+    cameraDetectInit();
 
 #ifdef DEMO
     
@@ -108,17 +103,11 @@ int main(){
     
     while(1){
 #ifdef DEMO
-        /*
-        if(getGPSstatus()){
-            blePrintBuffer();
-            resetGPSstatus();
-        }
-        */
-        
+        // Process GPS stuff
         if(getGPSreadStatus() == MSG_READY){
             // Message ready to parse in GPS buffer
             processGPS();
-            // Check if there's a new, valid location waiting
+            // Check if the parsing succeeded and valid data is ready
             if(getGPSstatus()){
                 resetGPSstatus();
                 bleWriteLocation(getCurrLocation());
@@ -128,11 +117,22 @@ int main(){
                 }
             }      
         }
+        // Check if we have any pothole detection alerts (could encapsulate this better, but this is fine for now)
+        // Check for computer vision detections first
+        if(getCameraDetect()){
+            temp_location = getCurrLocation();
+            if(temp_location.status != valid){
+                bleWriteUART("GPS location not yet valid\r\n", 28);
+            }
+            else{
+                bleWriteUART("Pothole reported\r\n", 18);
+                insertLocation(temp_location);
+            }
+            setCameraDetect(0);
+        }
         
-
-        // Check if we have any pothole detection alerts
         // See if report button was pressed
-        if(getLastPressed() == 0){
+        else if(getLastPressed() == 0){
             temp_location = getCurrLocation();
             if(temp_location.status != valid){
                 bleWriteUART("GPS location not yet valid\r\n", 28);

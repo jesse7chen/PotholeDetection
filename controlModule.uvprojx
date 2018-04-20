@@ -411,11 +411,6 @@
           <GroupName>Serial</GroupName>
           <Files>
             <File>
-              <FileName>main.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>.\main.c</FilePath>
-            </File>
-            <File>
               <FileName>Serial.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\Serial.c</FilePath>
@@ -479,6 +474,13 @@
         </Group>
         <Group>
           <GroupName>main</GroupName>
+          <Files>
+            <File>
+              <FileName>main.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\main.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>UART</GroupName>
@@ -597,6 +599,21 @@
               <FileName>buzzer.h</FileName>
               <FileType>5</FileType>
               <FilePath>.\buzzer.h</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>camera_detect</GroupName>
+          <Files>
+            <File>
+              <FileName>camera_detect.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\camera_detect.c</FilePath>
+            </File>
+            <File>
+              <FileName>camera_detect.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>.\camera_detect.h</FilePath>
             </File>
           </Files>
         </Group>
