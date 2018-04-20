@@ -7,6 +7,8 @@ int UART_read(char* c);
 
 char UART_read_blocking(void);
 
+char UART_read_nonblocking(void);
+
 char UART_write(char c);
 
 int UART_read_string(char* s, int maxLength);

@@ -27,6 +27,9 @@ static double bearingThreshold = 60;
 static database_loc_t dangerousPothole;
 static database_loc_t previousLoc;
 
+// For use in determining if we should write a pothole
+static database_loc_t previousPothole;
+
 
 // TODO: Add error checking to insertLocation so we don't overwrite SRAM
 
@@ -38,11 +41,12 @@ int databaseInit(void){
     return 0;
 }
 
+// Should return distance in m
 double distBetweenLocs(database_loc_t loc1, database_loc_t loc2){
     // Haversine implementation
 
 #ifdef HAVERSINE
-    double R = 6371000.0; // Earth's radius in km
+    double R = 6371000.0; // Earth's radius in m
     double lat1, lat2, lon1, lon2;
     double deltaLat, deltaLon;
     double a, c;
@@ -62,7 +66,7 @@ double distBetweenLocs(database_loc_t loc1, database_loc_t loc2){
 
 #elif COSINES  
     // Law of cosines implementation
-    double R = 6371000.0; // Earth's radius in km
+    double R = 6371000.0; // Earth's radius in m
     double lat1, lat2, lon1, lon2;
     double deltaLat, deltaLon;
     double d;
@@ -79,7 +83,7 @@ double distBetweenLocs(database_loc_t loc1, database_loc_t loc2){
     return d;
     
 #elif EQUIRECT
-    double R = 6371000.0; // Earth's radius in km
+    double R = 6371000.0; // Earth's radius in m
     double lat1, lat2, lon1, lon2;
     double deltaLat, deltaLon;
     double x,y,d;
@@ -171,6 +175,10 @@ int insertLocation(location_t loc){
     
     // Update database index number
     databaseIdx++;
+    
+    // Update previous pothole value
+    previousPothole.latitude = loc.latitude;
+    previousPothole.longitude = loc.longitude;
     
     return 0;
 }

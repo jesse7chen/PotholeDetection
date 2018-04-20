@@ -15,11 +15,13 @@ void ledInit(void)
 void ledOn(void)
 {
 	LPC_GPIO0->DATA &= ~(1<<7);
+    ledStatus = 1;
 }
 
 void ledOff(void)
 {						 
 	LPC_GPIO0->DATA |= (1<<7);
+    ledStatus = 0;
 }
 
 void toggleLED(void){

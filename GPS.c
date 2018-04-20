@@ -22,6 +22,9 @@
 #define RMC_BEARING 8 
 
 #define RMC_ONLY "$PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29\r\n"
+//#define RMC_ONLY "$PMTK314,0,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*2A\r\n"
+#define SET_BAUDRATE "$PMTK251,57600*2C\r\n"
+//#define SET_BAUDRATE "$PMTK251,115200*1F\r\n"
 
 #define BUFFER_MAX 100
 
@@ -32,7 +35,11 @@ static location_t currLocation = {.status = invalid,  .latitude = 0.0, .longitud
 static unsigned int gpsStatus = 0;
 static unsigned int gpsReadSuccess = 0;
 
-// TODO: Integrate database stuff into this file.
+/* State of the UART reads */
+static gpsReadStatus_t gpsReadStatus = START_CHAR; 
+static uint16_t currIdx = 0;
+
+
 // TODO: Change parsing code to utilize strchr for searching for delimiters
 
 // Getters and setters
@@ -52,8 +59,18 @@ void resetGPSreadSuccess(void){
     gpsReadSuccess = 0;
 }
 
+gpsReadStatus_t getGPSreadStatus(void){
+    return gpsReadStatus;
+}
+
 location_t getCurrLocation(void){
     return currLocation;
+}
+
+void resetGPSbuffer(void){
+    memset(buffer, 0, sizeof(char)*BUFFER_MAX);
+    currBufferLen = 0;
+    currIdx = 0;
 }
 
 // Main functions
@@ -65,51 +82,90 @@ int GPS_init(void){
     threadWait(48000000);
     
     if(UART_write_string(s) != 0){
+        toggleLED();
         return -1;
     }
+    
+    // Set GPS baudrate to 57600
+    s = SET_BAUDRATE;
+    if(UART_write_string(s) != 0){
+        toggleLED();
+        return -1;
+    }
+    // Wait 50 ms to enable divisor latch, last character has to send
+    threadWait(2400000);
+    // Set our own baudrate to 57600
+    // Enable divisor latches
+    
+    LPC_UART->LCR = 0x83;  
+    
+    // Setting baud rate to be 57600
+    LPC_UART->DLL = 8;
+    LPC_UART->DLM = 0;
+    // Format: 0xMULVAL, DIVDADDVAL
+    LPC_UART->FDR = 0x85;
+    
+    // Disable divisor latches now that baudrate is set. Need to do this to access receive and transmit buffers
+    LPC_UART->LCR = 0x03;
+    
+    
+    
 
-    // Clear RX buffer
-    while(UART_read(&c) != -1);
+    // Clear RX buffer only
+    //while(UART_read(&c) != -1);
+    LPC_UART->FCR = 0x03;
+    
+    /*
     // Want a timer to call our code every 1s.
-    /* Enable clock for our 32 bit timer */
+    // Enable clock for our 32 bit timer 
     LPC_SYSCON->SYSAHBCLKCTRL |= 1UL << 9;
     
-    /* Activate timer */
+    // Activate timer 
     LPC_TMR32B0->TCR = 1UL;
     
-    /* Generate interrupt and reset timer when we hit count limit */
+    // Generate interrupt and reset timer when we hit count limit
     LPC_TMR32B0->MCR = (1UL << 1) | (1UL << 0);
-    /* Count up to 48E6, this should be 1s */
+    // Count up to 48E6, this should be 1s 
     LPC_TMR32B0->MR0 = 48000000;
-    /*  Enable timer interrupt */
+    //  Enable timer interrupt 
     NVIC_SetPriority(TIMER_32_0_IRQn, 0);
     //NVIC_ClearPendingIRQ(TIMER_32_0_IRQn);
     NVIC_EnableIRQ(TIMER_32_0_IRQn);
+    */
     
     // Initialize static variables
     memset(buffer, 0, sizeof(char)*BUFFER_MAX);
     currBufferLen = 0;
+    
+    
+/* Finalize UART stuff */
+    // Enable RX data available interrupt
+    LPC_UART->IER = (1UL);
+    // Set UART interrupt priority
+    NVIC_SetPriority(UART_IRQn, 0);
+    
+    // Enable UART interrupt
+    NVIC_EnableIRQ(UART_IRQn);
     
     return 0;
 }
 
 
 void readGPS(void){
-    // Read message into buffer
-    toggleLED();
-    
+    // Read message into buffer    
     if(readNMEA() == -1){
         memset(buffer, 0, sizeof(char)*BUFFER_MAX);
         currBufferLen = 0;
         return;
     }
-
+    
     // Verify checksum
     if (verifyChecksum() != 0){
         memset(buffer, 0, sizeof(char)*BUFFER_MAX);
         currBufferLen = 0;
         return;
     }
+    
     // Flag that we have a successful read for debugging purposes
     gpsReadSuccess = 1;
     return;
@@ -131,6 +187,46 @@ void readGPS(void){
     // Reset static variables
     memset(buffer, 0, sizeof(char)*BUFFER_MAX);
     currBufferLen = 0;
+}
+
+void processGPS(void){
+    // Message should already be in buffer
+        
+    // Verify checksum
+    if (verifyChecksum() != 0){
+        memset(buffer, 0, sizeof(char)*BUFFER_MAX);
+        currBufferLen = 0;
+        // Reset gpsReadStatus
+        gpsReadStatus = START_CHAR;
+        return;
+    }
+    
+    // Flag that we have a successful checksum for debugging purposes
+    // gpsReadSuccess = 1;
+    bleWriteUART("Read success\r\n", 14);
+    
+    // Parse message
+    if (parseNMEA() != 0){
+        memset(buffer, 0, sizeof(char)*BUFFER_MAX);
+        currBufferLen = 0;
+        // Reset gpsReadStatus
+        gpsReadStatus = START_CHAR;
+        return;
+    }
+    
+    if(gpsStatus == 1){
+        //printf("GPS status not reset yet\r\n");   
+    }
+    else{
+        gpsStatus = 1;
+    }
+    
+    // Reset static variables
+    memset(buffer, 0, sizeof(char)*BUFFER_MAX);
+    currBufferLen = 0;
+    // Reset gpsReadStatus
+    gpsReadStatus = START_CHAR;
+    return;
 }
 
 // Code for debugging
@@ -233,6 +329,92 @@ static int readNMEA(void){
     // We've hit the end of our buffer
     return -1;
     
+}
+
+int readNMEA_UART(void){
+    char c;
+    // Check to see that we don't overflow buffer
+    if(currIdx >= BUFFER_MAX){
+        return -1;
+    }
+    
+    // If this function is called, we know that there should be something in the buffer
+    switch(gpsReadStatus){
+        case(START_CHAR): {
+            c = UART_read_blocking();
+            if (c == '$'){
+                buffer[currIdx++] = c;
+                gpsReadStatus = FIRST_END_CHAR;
+                return 0;
+            }
+            // Didn't find startChar, don't load in char
+            return -1;            
+        }
+        case(FIRST_END_CHAR):{
+            // Found starting character already, load in characters until we find first ending char
+            c = UART_read_blocking();
+            buffer[currIdx++] = c;
+            if(c == '\r'){
+                gpsReadStatus = SECOND_END_CHAR;
+            }
+            return 0;
+        }
+        case(SECOND_END_CHAR):{
+            // Have found first ending char, look for second one
+            c = UART_read_blocking();
+            buffer[currIdx++] = c;
+            if(c == '\n'){
+                gpsReadStatus = MSG_READY;
+                buffer[currIdx++] = '\0';
+                // At this point, buffer should contain valid NMEA sentence. We return the length of the sentence (including null at the end);
+                currBufferLen = currIdx;
+                
+                currIdx = 0;
+                return currBufferLen;
+            }
+            return 0;         
+        }
+        case(MSG_READY):{
+            // Message hasn't reset since we last loaded it in
+            return 0;
+        }      
+    }
+    
+    return -1;
+    
+    // If-else statement implementation
+    /*
+    if(!startChar){
+        // We haven't found a starting character yet
+        retVal = UART_read(&c);
+        if (c == '$'){
+            buffer[currIdx++] = c;
+            startChar = 1;
+            return 0;
+        }
+        // Didn't find startChar, don't load in char
+        return -1;
+    }
+    else if (!firstEndChar){
+        // Found starting character already, load in characters until we find first ending char
+        retVal = UART_read(&c);
+        buffer[currIdx++] = c;
+        if(c == '\r'){
+            firstEndChar = 1;
+        }
+        return 0;
+    }
+    else{
+        // Have found first ending char, look for second one
+        retVal = UART_read(&c);
+        buffer[currIdx++] = c;
+        if(c == '\n'){
+            gpsMsgReady = 1;
+        }
+        return 0;
+    }
+    */
+       
 }
 
 // Returns checksum as a raw value

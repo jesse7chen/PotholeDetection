@@ -87,7 +87,7 @@ void stopwatchStart(void){
 double stopwatchStop(void){
     double time;
     // Stop counters
-    // LPC_TMR16B0->TCR = 0;
+    LPC_TMR16B0->TCR = 0;
     // Number of 50us (0.05 ms) increments since stopwatchStart
     time = LPC_TMR16B0->TC;
     // Change time to ms

@@ -91,13 +91,18 @@ int main(){
 
     //testNMEA();
     
-    hapticWarnUser();
+    // hapticWarnUser();
     // Set GPS interrupt priority
-    //NVIC_SetPriority(TIMER_32_0_IRQn, 1);
+    NVIC_SetPriority(TIMER_32_0_IRQn, 0);
     // Set button interrupt priority
-    //NVIC_SetPriority(TIMER_16_1_IRQn, 2);
+    NVIC_SetPriority(TIMER_16_1_IRQn, 1);
     // Set timer interrupt priority
-    //NVIC_SetPriority(TIMER_32_1_IRQn, 0);   
+    NVIC_SetPriority(TIMER_32_1_IRQn, 0);   
+    // Set stopwatch/haptic feedback priority
+    NVIC_SetPriority(TIMER_16_0_IRQn, 0);
+    // Set UART interrupt priority
+    NVIC_SetPriority(UART_IRQn, 0);
+        
     
     databaseInit();
     
@@ -110,22 +115,24 @@ int main(){
         }
         */
         
-        // Check if there's a new, valid location waiting
-        if(getGPSstatus()){
-            resetGPSstatus();
-            bleWriteLocation(getCurrLocation());
-            if (searchDatabase(getCurrLocation()) == 1){
-                hapticWarnUser();
-            }
+        if(getGPSreadStatus() == MSG_READY){
+            // Message ready to parse in GPS buffer
+            processGPS();
+            // Check if there's a new, valid location waiting
+            if(getGPSstatus()){
+                resetGPSstatus();
+                bleWriteLocation(getCurrLocation());
+                if (searchDatabase(getCurrLocation()) == 1){
+                    bleWriteUART("Pothole near\r\n", 14); 
+                    hapticWarnUser();
+                }
+            }      
         }
-        else if (getGPSreadSuccess()){
-            blePrintBuffer();
-            resetGPSreadSuccess();
-        }
+        
+
         // Check if we have any pothole detection alerts
         // See if report button was pressed
         if(getLastPressed() == 0){
-            resetLastPressed();
             temp_location = getCurrLocation();
             if(temp_location.status != valid){
                 bleWriteUART("GPS location not yet valid\r\n", 28);
@@ -134,6 +141,7 @@ int main(){
                 bleWriteUART("Pothole reported\r\n", 18);
                 insertLocation(temp_location);
             }
+            resetLastPressed();
         }
         
         
@@ -159,6 +167,11 @@ int main(){
         }
             
 #elif TIME_TEST
+        if(getGPSreadStatus() == MSG_READY){
+            // Message ready to parse in GPS buffer
+            processGPS();
+        }
+        /*
         stopwatchStart();
         for(i = 0; i < 1000; i++){
             dist = bearingBetweenLocs(loc1, loc2);
@@ -166,6 +179,7 @@ int main(){
         time = stopwatchStop();
         
         for(i = 0; i < 100000; i++){}
+        */
 #endif
     }
 

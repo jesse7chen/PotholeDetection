@@ -7,7 +7,6 @@
 #include "timer.h"
 #include "button.h"
 #include "config.h"
-
 #include "stopwatch.h"
 
 void TIMER32_0_IRQHandler(void){
@@ -17,10 +16,9 @@ void TIMER32_0_IRQHandler(void){
         /* Clear interrupt register */
         LPC_TMR32B0->IR = (0x01);
         // Call GPS function
-
+        //readGPS();
     }
-    NVIC_ClearPendingIRQ(TIMER_32_0_IRQn);
-    readGPS();
+    NVIC_ClearPendingIRQ(TIMER_32_0_IRQn); 
 }
 
 void TIMER32_1_IRQHandler(void){
@@ -67,3 +65,18 @@ void TIMER16_1_IRQHandler(void){
     }
     NVIC_ClearPendingIRQ(TIMER_16_1_IRQn);
 }
+
+void UART_IRQHandler(void){
+    uint8_t interruptID;
+    
+    interruptID = (LPC_UART->IIR & 0x0E) >> 1;    
+    if (interruptID == 0x02){
+        // Data available
+        if (readNMEA_UART() == -1){
+            resetGPSbuffer();
+        }
+    }
+    
+    NVIC_ClearPendingIRQ(UART_IRQn);
+}
+

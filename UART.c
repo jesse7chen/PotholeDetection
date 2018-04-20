@@ -30,6 +30,9 @@ void UART_init(){
     // Disable divisor latches now that baudrate is set. Need to do this to access receive and transmit buffers
     LPC_UART->LCR = 0x03;
     
+    // Enable UART FIFOs and clear TX/RX FIFOs, set FIFO trigger level to 1 character
+    LPC_UART->FCR = 0x07;
+    
 }
 
 // Reads a single byte
@@ -60,8 +63,11 @@ int UART_read(char* c){
         }
     }
     *c = LPC_UART->RBR;
-    return 0;
-    
+    return 0; 
+}
+
+char UART_read_nonblocking(void){
+    return (char)(LPC_UART->RBR);
 }
 
 char UART_read_blocking(void){
