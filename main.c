@@ -15,6 +15,9 @@
 #include "buzzer.h"
 #include "camera_detect.h"
 
+#include "accelerometer.h"
+#include "i2c.h"
+
 #include "config.h"
 
 #ifdef DATABASE_TEST
@@ -59,8 +62,15 @@ int main(){
     static double time;
     */
     
-    //database_loc_t temp_database_loc;
-    location_t temp_location;
+    static database_loc_t temp_database_loc;
+    static database_loc_t previousPothole;
+    static location_t temp_location;
+    static uint8_t previousPotholeSet = 0;
+    
+    static uint8_t potEnc = 0; // Set when pothole is about to be encountered (database check)
+    static uint8_t potDet = 0; // Set when pothole is detected by button or accelerometer
+    static uint8_t potDet_cv = 0; // Set when pothole is detected by computer vision
+    static uint8_t canDet = 0; // Set when a pothole has not been detected recently
     
     UART_init();
     GPS_init();
@@ -71,22 +81,16 @@ int main(){
     bleInit();
     initButtons();
     cameraDetectInit();
+    
+    configure_i2c();
+    init_accelerometer();
 
 #ifdef DEMO
     
 #elif TIME_TEST
     stopwatchInit();
 #endif
-    // GPS interrupt pin is 1_8
-    // Set pin interrupt to trigger on rising edges
-    //LPC_GPIO1->IEV |= (1UL << 8);
-    // Unmask pin interrupt
-    //LPC_GPIO1->IE &= ~(1UL << 8);
 
-
-    //testNMEA();
-    
-    // hapticWarnUser();
     // Set GPS interrupt priority
     NVIC_SetPriority(TIMER_32_0_IRQn, 0);
     // Set button interrupt priority
@@ -97,51 +101,102 @@ int main(){
     NVIC_SetPriority(TIMER_16_0_IRQn, 0);
     // Set UART interrupt priority
     NVIC_SetPriority(UART_IRQn, 0);
-        
-    
+    // Set camera interrupt priority
+    NVIC_SetPriority(EINT1_IRQn, 0);
+           
     databaseInit();
     
     while(1){
 #ifdef DEMO
-        // Process GPS stuff
+        
+        // Process waiting GPS message
         if(getGPSreadStatus() == MSG_READY){
             // Message ready to parse in GPS buffer
             processGPS();
             // Check if the parsing succeeded and valid data is ready
             if(getGPSstatus()){
                 resetGPSstatus();
-                bleWriteLocation(getCurrLocation());
-                if (searchDatabase(getCurrLocation()) == 1){
+                temp_location = getCurrLocation();
+                // Write location to BLE for debugging
+                bleWriteLocation(temp_location);                  
+                // Search database (potEnc)
+                if (searchDatabase(temp_location) == 1){
                     bleWriteUART("Pothole near\r\n", 14); 
                     hapticWarnUser();
                 }
-            }      
+                // Check if our current location is 5m from previously detected pothole
+                if (previousPotholeSet == 1){
+                    // Load in current location
+                    temp_database_loc.latitude = temp_location.latitude;
+                    temp_database_loc.longitude = temp_database_loc.longitude;
+                    // Check distnace
+                    if(distBetweenLocs(previousPothole, temp_database_loc) >= 5){
+                        canDet = 1;
+                    }
+                    else{
+                        canDet = 0;
+                    }
+                }            
+            }        
         }
+                
         // Check if we have any pothole detection alerts (could encapsulate this better, but this is fine for now)
-        // Check for computer vision detections first
-        if(getCameraDetect()){
-            temp_location = getCurrLocation();
-            if(temp_location.status != valid){
-                bleWriteUART("GPS location not yet valid\r\n", 28);
+        if(canDet){
+            // Check for computer vision detections first (potDet_cv)
+            if(getCameraDetect()){
+                // Warn user
+                hapticWarnUser();
+                // Check if we can insert pothole into database
+                temp_location = getCurrLocation();
+                if(temp_location.status != valid){
+                    bleWriteUART("GPS location not yet valid\r\n", 28);
+                }
+                else{
+                    bleWriteUART("Pothole reported (C)\r\n", 22);
+                    if(insertLocation(temp_location) == 0){
+                        // Inserted pothole properly, set previous pothole
+                        previousPothole.latitude = temp_location.latitude;
+                        previousPothole.longitude =  temp_location.longitude;                  
+                    }
+                }
+                // Reset flag
+                setCameraDetect(0);
             }
-            else{
-                bleWriteUART("Pothole reported\r\n", 18);
-                insertLocation(temp_location);
+            
+            // Check if accelerometer detected a pothole (potDet)
+            else if(getAccPotholeDet()){
+                temp_location = getCurrLocation();
+                if(temp_location.status != valid){
+                    bleWriteUART("GPS location not yet valid\r\n", 28);
+                }
+                else{
+                    bleWriteUART("Pothole reported (A)\r\n", 22);
+                    if(insertLocation(temp_location) == 0){
+                        // Inserted pothole properly, set previous pothole
+                        previousPothole.latitude = temp_location.latitude;
+                        previousPothole.longitude =  temp_location.longitude;                  
+                    }
+                }
+                // Reset flag
+                resetAccPotholeDet();
             }
-            setCameraDetect(0);
-        }
-        
-        // See if report button was pressed
-        else if(getLastPressed() == 0){
-            temp_location = getCurrLocation();
-            if(temp_location.status != valid){
-                bleWriteUART("GPS location not yet valid\r\n", 28);
+            
+            // See if report button was pressed (potDet)
+            else if(getLastPressed() == 0){
+                temp_location = getCurrLocation();
+                if(temp_location.status != valid){
+                    bleWriteUART("GPS location not yet valid\r\n", 28);
+                }
+                else{
+                    bleWriteUART("Pothole reported (B)\r\n", 22);
+                    if(insertLocation(temp_location) == 0){
+                        // Inserted pothole properly, set previous pothole
+                        previousPothole.latitude = temp_location.latitude;
+                        previousPothole.longitude =  temp_location.longitude;                  
+                    }
+                }
+                resetLastPressed();
             }
-            else{
-                bleWriteUART("Pothole reported\r\n", 18);
-                insertLocation(temp_location);
-            }
-            resetLastPressed();
         }
         
         

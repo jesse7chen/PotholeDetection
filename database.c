@@ -27,9 +27,6 @@ static double bearingThreshold = 60;
 static database_loc_t dangerousPothole;
 static database_loc_t previousLoc;
 
-// For use in determining if we should write a pothole
-static database_loc_t previousPothole;
-
 
 // TODO: Add error checking to insertLocation so we don't overwrite SRAM
 
@@ -137,7 +134,7 @@ int insertLocation(location_t loc){
     
     // Check if we're gonna overflow
     if(databaseIdx >= MAX_NUM_ENTRIES){
-        return -1;
+        return DATABASE_WRITE_ERROR;
     }
     
     
@@ -151,11 +148,6 @@ int insertLocation(location_t loc){
     data[entry_num].latitude = loc.latitude;
     data[entry_num].longitude = loc.longitude;
     
-    // If distance between this pothole and the one we just saw is less than 5 m, don't bother recording it again
-    if(distBetweenLocs(previousPothole, data[entry_num]) < 5){
-        return -1;
-    }
-    
     // Set rest of data to 0xFF, so we don't set any more flash bits to 0 than we need to (otherwise we have to rewrite entire block)
     // Only do this if we're not on the last entry of the page
     if(entry_num != 15){
@@ -165,7 +157,7 @@ int insertLocation(location_t loc){
     dest = (DATABASE_P + (page*256));
     
     if(writeFlash(dest, (unsigned int)data, 256) != CMD_SUCCESS){
-        return -1;
+        return DATABASE_WRITE_ERROR;
     }
     
     // Update the database idx. Set the first databaseIdx bytes to 0s, and the rest to 0xFF
@@ -176,15 +168,11 @@ int insertLocation(location_t loc){
     memset(data, 0x00, sizeof(uint8_t)*(databaseIdx+1));
     dest = DATABASEIDX_P;
     if(writeFlash(dest, (unsigned int)data, 256) != CMD_SUCCESS){
-        return -1;
+        return DATABASE_WRITE_ERROR;
     }
     
     // Update database index number
     databaseIdx++;
-    
-    // Update previous pothole value
-    previousPothole.latitude = loc.latitude;
-    previousPothole.longitude = loc.longitude;
     
     return 0;
 }

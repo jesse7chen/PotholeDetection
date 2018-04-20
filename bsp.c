@@ -10,17 +10,22 @@
 #include "stopwatch.h"
 #include "camera_detect.h"
 
+#include "accelerometer.h"
+
+// Old GPS timer handler
+/*
 void TIMER32_0_IRQHandler(void){
-    /* Check which match register triggered the interrupt here */
+    // Check which match register triggered the interrupt here 
     if((LPC_TMR32B0->IR & 0x01) == 0x01){
-        /* Call read button handler if the interrupt was timer used for the button by reading if bit 0 is 1 */
-        /* Clear interrupt register */
+        // Call read button handler if the interrupt was timer used for the button by reading if bit 0 is 1
+        // Clear interrupt register
         LPC_TMR32B0->IR = (0x01);
         // Call GPS function
         //readGPS();
     }
     NVIC_ClearPendingIRQ(TIMER_32_0_IRQn); 
 }
+*/
 
 void TIMER32_1_IRQHandler(void){
     /* Check which match register triggered the interrupt here */
@@ -87,8 +92,12 @@ void PIOINT1_IRQHandler(void){
     if((LPC_GPIO1->MIS & (1UL << 2)) == 1){
         // Camera has detected something
         setCameraDetect(1);
+        // Clear interrupt
+        LPC_GPIO1->IC = (1UL << 2);
     }
     
     NVIC_ClearPendingIRQ(EINT1_IRQn);
+    __NOP();
+	__NOP();
 }
 

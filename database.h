@@ -1,6 +1,8 @@
 #ifndef _DATABASE_H_
 #define _DATABASE_H_
 
+#define DATABASE_WRITE_ERROR -1
+
 #include "GPS.h"
 
 typedef struct database_loc_t 
