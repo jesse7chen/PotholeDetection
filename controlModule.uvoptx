@@ -138,32 +138,20 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>UL2CM3</Key>
-          <Name>-UAny -O207 -S0 -C0 -P00 -N00("ARM CoreSight SW-DP") -D00(0BB11477) -L00(0) -TO18 -TC10000000 -TP21 -TDS8007 -TDT0 -TDC1F -TIEFFFFFFFF -TIP8 -FO7 -FD10000000 -FCFE0 -FN1 -FF0LPC1xxx_32.FLM -FS00 -FL08000 -FP0($$Device:LPC1114FDH28/102$Flash\LPC1xxx_32.FLM)</Name>
+          <Name>-UAny -O207 -S0 -C0 -P00 -TO18 -TC10000000 -TP21 -TDS8007 -TDT0 -TDC1F -TIEFFFFFFFF -TIP8 -FO23 -FD10000000 -FCFE0 -FN1 -FF0LPC1xxx_32.FLM -FS00 -FL08000 -FP0($$Device:LPC1114FDH28/102$Flash\LPC1xxx_32.FLM)</Name>
         </SetRegEntry>
       </TargetDriverDllRegistry>
-      <Breakpoint>
-        <Bp>
-          <Number>0</Number>
-          <Type>0</Type>
-          <LineNumber>92</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>5974</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>1</BreakIfRCount>
-          <Filename>.\bsp.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression>\\controlModule\bsp.c\92</Expression>
-        </Bp>
-      </Breakpoint>
+      <Breakpoint/>
       <WatchWindow1>
         <Ww>
           <count>0</count>
           <WinNumber>1</WinNumber>
           <ItemText>\\controlModule\GPS.c\buffer</ItemText>
+        </Ww>
+        <Ww>
+          <count>1</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>0x00007100</ItemText>
         </Ww>
       </WatchWindow1>
       <MemoryWindow1>
@@ -185,8 +173,8 @@
       <MemoryWindow3>
         <Mm>
           <WinNumber>3</WinNumber>
-          <SubType>1</SubType>
-          <ItemText>0x100000AC</ItemText>
+          <SubType>7</SubType>
+          <ItemText>0x10000128</ItemText>
           <AccSizeX>0</AccSizeX>
         </Mm>
       </MemoryWindow3>
@@ -237,7 +225,7 @@
 
   <Group>
     <GroupName>Startup</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -625,7 +613,7 @@
 
   <Group>
     <GroupName>stopwatch</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -689,7 +677,7 @@
 
   <Group>
     <GroupName>buzzer</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>
@@ -721,7 +709,7 @@
 
   <Group>
     <GroupName>camera_detect</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>

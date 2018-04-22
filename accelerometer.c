@@ -7,14 +7,15 @@ static uint8_t data_int = 0;
 static int curr_int;
 static float list[3];
 static uint8_t potholeDetected = 0;
-static char temp_buffer[20];
+//static char temp_buffer[30];
 
 #define ACCEL_ADDRESS_W 0x98
 #define ACCEL_ADDRESS_R 0x99
 #define PRESCALE (400000-1) //48000 PCLK clock cycles to increment TC by 1 
 
 #define ACCEL_SENSITIVITY 0.047
-#define THRESHOLD .5
+//#define THRESHOLD .5
+#define THRESHOLD 1.4
 
 #define ACCEL_SENSITIVITY 0.047
 
@@ -74,8 +75,8 @@ void TIMER32_0_IRQHandler(void)
 	uint8_t data;
 	data = accel_readregister(0x02);
 	list[curr_int] = data_convert(data);
-    sprintf(temp_buffer, "%d\r\n", data);
-    bleWriteUART(temp_buffer, strlen(temp_buffer));
+    //sprintf(temp_buffer, "%d\r\n", data);
+    //bleWriteUART(temp_buffer, strlen(temp_buffer));
 	
 //	if(prev_int == 1 || curr_int == 2)
 //	{
@@ -110,11 +111,13 @@ uint8_t checkAccel(void)
 	{
 		prev = 2;
 	}
-	if((list[curr] - list[prev] > THRESHOLD) || (list[curr] - list[prev] < -THRESHOLD))
-	{
-		//printf("Detected \n\r");
-		return 1;
-	}
+    if((list[curr] - list[prev] > THRESHOLD) || (list[curr] - list[prev] < -THRESHOLD))
+    {
+        //printf("Detected \n\r");
+        //sprintf(temp_buffer, "%f %f\r\n", list[curr], list[prev]);
+        //bleWriteUART(temp_buffer, strlen(temp_buffer));
+        return 1;
+    }
     return 0;
 }
 
@@ -183,9 +186,9 @@ uint8_t accel_readregister(uint8_t reg)
 			
 		write_address(ACCEL_ADDRESS_R, 1);
 		
-//		for(int i = 0; i < 0xFFFF; i++)
-//		{
-//		}
+		for(int i = 0; i < 325; i++)
+		{
+		}
 	
 		data = read_byte();
 		LPC_I2C->CONSET |= 0x10;

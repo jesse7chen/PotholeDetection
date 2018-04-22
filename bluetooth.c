@@ -60,7 +60,7 @@ int bleWriteLocation(location_t loc){
             break;
         }
     }*/
-    sprintf(tempBuffer, "Latitude: %f\r\nLongitude: %f\r\n", loc.latitude, loc.longitude);
+    sprintf(tempBuffer, "\r\nLatitude: %f\r\nLongitude: %f\r\n", loc.latitude, loc.longitude);
     //sprintf(tempBuffer, "Latitude: %f\r\nLongitude: %f\r\nSpeed: %f\r\nBearing: %f\r\n", loc.latitude, loc.longitude, loc.speed, loc.bearing);
     //sprintf(tempBuffer, "Latitude: %g\r\nLongitude: %g\r\nSpeed: %g\r\n", loc.latitude, loc.longitude, loc.speed);
     //sprintf(tempBuffer, "Double size: %d\r\n, float size: %d\r\n", sizeof(double), sizeof(float));

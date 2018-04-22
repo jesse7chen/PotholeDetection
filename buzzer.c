@@ -6,7 +6,11 @@
 
 void buzzerInit(void){
     //set port 1_5 to output (high current drain in LPC1114)
-    LPC_GPIO1->DIR |= (1<<5);
+    LPC_GPIO1->DIR |= (1UL << 5);
+    // Set port 1_4 to output
+    LPC_GPIO1->DIR |= (1UL << 4);
+    // Set port 1_4 high to stop buzzer
+    LPC_GPIO1->DATA |= (1<<4);
     // Set GPIO pin low
     buzzerOff();
 }
@@ -24,7 +28,7 @@ void hapticWarnUser(void){
     // Set buzzerOff to execute in one second
 #ifdef DEMO
     // Second argument is time in ms
-    delayedExecute(buzzerOff, 1000);
+    delayedExecute(buzzerOff, 1500);
 #elif TIME_TEST
     // Wait a half second
     threadWait(24000000);

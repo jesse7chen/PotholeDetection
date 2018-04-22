@@ -3,6 +3,9 @@
 #include <string.h>
 #include "flash.h"
 #include "test_database.h"
+#include "bluetooth.h"
+// For sprintf
+#include <stdio.h>
 //#define _USE_MATH_DEFINES
 
 #define M_PI 3.14159265358979323846
@@ -10,8 +13,8 @@
 #define DATABASE_P 0x00007100
 #define MAX_NUM_ENTRIES 240
 
-//#define COSINES 1
 //#define HAVERSINE 1
+//#define COSINES 1
 #define EQUIRECT 1
 
 static database_loc_t* database;
@@ -19,13 +22,24 @@ static unsigned int databaseIdx; // Should point to next free spot in database
 static uint8_t warningStatus = 0;
 
 // Threshold is 25m
-static double distThreshold = 25;
+static double distThreshold = 25.0;
 // Our bearing should be within this many degrees of expected bearing to trigger warning
 static double bearingThreshold = 60;
 
 // For use in stage 2
-static database_loc_t dangerousPothole;
+#define MAX_DANGEROUS_POTHOLES 3
+// TODO: Could change this to just store a pointer to the potholes to save memory, but this is easier to read for now
+static database_loc_t dangerousPotholes[MAX_DANGEROUS_POTHOLES];
+static uint8_t dangerousPotholesCount = 0;
 static database_loc_t previousLoc;
+
+
+
+// For debugging
+#ifdef DEBUG
+    static char temp_buffer[20];
+#endif
+static double temp_distance = 0.0;
 
 
 // TODO: Add error checking to insertLocation so we don't overwrite SRAM
@@ -201,31 +215,39 @@ uint8_t searchDatabase(location_t currLoc){
     
     if(warningStatus == 0){
         // Not at risk of hitting pothole yet
-        for(searchIdx = 0; searchIdx < databaseIdx; searchIdx++){
-            if(distBetweenLocs(db_currLoc, database[searchIdx]) < distThreshold){
+        for(searchIdx = 0; searchIdx < databaseIdx; searchIdx++){           
+            temp_distance = distBetweenLocs(db_currLoc, database[searchIdx]);
+#ifdef DEBUG
+            sprintf(temp_buffer, "%f\r\n", temp_distance);
+            bleWriteUART(temp_buffer, strlen(temp_buffer));
+#endif
+            if((temp_distance< distThreshold) && (dangerousPotholesCount < MAX_DANGEROUS_POTHOLES)){
                 previousLoc = db_currLoc;
-                dangerousPothole = database[searchIdx];
+                dangerousPotholes[dangerousPotholesCount++] = database[searchIdx];
                 warningStatus = 1;
-                
+                bleWriteUART("Pothole near\r\n", 14); 
             }
         }
     }
     else if(warningStatus == 1){
-        // Are we still within the warning distance?
-        if(distBetweenLocs(db_currLoc, dangerousPothole) < distThreshold){
-            // Already near pothole, check if we're heading towards pothole
-            // Calculate bearing of GPS coordinate with bearing we would expect if headed towards pothole
-            expectedBearing = bearingBetweenLocs(previousLoc, dangerousPothole);   
-            if ((fabs(expectedBearing - currLoc.bearing) < bearingThreshold) || (fabs(expectedBearing - currLoc.bearing) > (360-bearingThreshold))){
-                // Reset warning status
-                warningStatus = 0;
-                return 1;             
+        // Check all potholes in our list of nearby potholes
+        for(searchIdx = 0; searchIdx < dangerousPotholesCount; searchIdx++){
+        // Are we still within the warning distance?       
+            if(distBetweenLocs(db_currLoc, dangerousPotholes[searchIdx]) < distThreshold){
+                
+                // Compare bearing of GPS coordinate with bearing we would expect if headed towards pothole
+                expectedBearing = bearingBetweenLocs(previousLoc, dangerousPotholes[searchIdx]);                
+                if ((fabs(expectedBearing - currLoc.bearing) < bearingThreshold) || (fabs(expectedBearing - currLoc.bearing) > (360-bearingThreshold))){
+                    // Reset warning status and report pothole alert
+                    warningStatus = 0;
+                    dangerousPotholesCount = 0;
+                    return 1;             
+                }
             }
         }
-        else{
-            // If not, reset warningStatus and return no dangerous potholes nearby
-            warningStatus = 0;
-        }     
+        // We have checked all potholes and are headed towards none of them, lets grab some new potholes
+        warningStatus = 0;
+        dangerousPotholesCount = 0;
     }
     // No potholes dangerous
     return 0;   
