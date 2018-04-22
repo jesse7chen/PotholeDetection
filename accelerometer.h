@@ -16,6 +16,7 @@ extern float list[3];
 */
 
 float getListVal(int idx);
+float getAccDiff(void);
 
 void init_accelerometer(void);
 uint8_t checkAccel(void);

@@ -138,7 +138,7 @@
         <SetRegEntry>
           <Number>0</Number>
           <Key>UL2CM3</Key>
-          <Name>-UAny -O207 -S0 -C0 -P00 -TO18 -TC10000000 -TP21 -TDS8007 -TDT0 -TDC1F -TIEFFFFFFFF -TIP8 -FO23 -FD10000000 -FCFE0 -FN1 -FF0LPC1xxx_32.FLM -FS00 -FL08000 -FP0($$Device:LPC1114FDH28/102$Flash\LPC1xxx_32.FLM)</Name>
+          <Name>-UAny -O207 -S0 -C0 -P00 -N00("ARM CoreSight SW-DP") -D00(0BB11477) -L00(0) -TO18 -TC10000000 -TP21 -TDS8007 -TDT0 -TDC1F -TIEFFFFFFFF -TIP8 -FO23 -FD10000000 -FCFE0 -FN1 -FF0LPC1xxx_32.FLM -FS00 -FL08000 -FP0($$Device:LPC1114FDH28/102$Flash\LPC1xxx_32.FLM)</Name>
         </SetRegEntry>
       </TargetDriverDllRegistry>
       <Breakpoint/>
@@ -157,8 +157,8 @@
       <MemoryWindow1>
         <Mm>
           <WinNumber>1</WinNumber>
-          <SubType>0</SubType>
-          <ItemText>0x00007000</ItemText>
+          <SubType>6</SubType>
+          <ItemText>\\controlModule\accelerometer.c\list</ItemText>
           <AccSizeX>0</AccSizeX>
         </Mm>
       </MemoryWindow1>
@@ -741,7 +741,7 @@
 
   <Group>
     <GroupName>accelerometer</GroupName>
-    <tvExp>0</tvExp>
+    <tvExp>1</tvExp>
     <tvExpOptDlg>0</tvExpOptDlg>
     <cbSel>0</cbSel>
     <RteFlg>0</RteFlg>

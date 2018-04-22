@@ -29,7 +29,7 @@
 
 #define TEST_P 0x00007000
 
-#define PREV_POTHOLE_THRESH 25.0
+#define PREV_POTHOLE_THRESH 15.0
 
 // Allow 40 bytes for variable length parameters (though the compiler says this apparently doesn't do anything)
 #pragma maxargs (40) 
@@ -51,7 +51,7 @@ void flashTest(void){
 
 int main(){
     
-    //int i = 0;
+    int i = 0;
     
     //char* s = "$GPRMC,064951.000,A,2307.1256,N,12016.4438,E,0.03,165.48,260406,3.05,W,A*2C\r\n";
     //int len = strlen(s);
@@ -62,7 +62,7 @@ int main(){
     //static database_loc_t loc1 = {.latitude = 40.116850, .longitude = -88.229842};
     //static database_loc_t loc2 = {.latitude = 40.116863, .longitude = -88.230424};
     //static double dist;
-    //static char dist_s[20];
+    static char temp_buff[20];
     //static double time;
     
     
@@ -96,7 +96,7 @@ int main(){
 #endif
 
     // Set accelerometer interrupt priority
-    NVIC_SetPriority(TIMER_32_0_IRQn, 1);
+    NVIC_SetPriority(TIMER_32_0_IRQn, 0);
     // Set button interrupt priority
     NVIC_SetPriority(TIMER_16_1_IRQn, 1);
     // Set timer interrupt priority
@@ -228,9 +228,11 @@ int main(){
             // Check if the parsing succeeded and valid data is ready
             if(getGPSstatus()){
                 resetGPSstatus();
+                canDet = 1;
+                
                 curr_location = getCurrLocation();
                 // Write location to BLE for debugging
-                bleWriteLocation(curr_location);                  
+                //bleWriteLocation(curr_location);                  
                 // Search database (potEnc)
                 if (searchDatabase(curr_location) == 1){
                     bleWriteUART("ALERT\r\n", 7); 
@@ -260,7 +262,10 @@ int main(){
             else if(getAccPotholeDet()){
                 curr_location = getCurrLocation();
                 bleWriteUART("Pothole reported (A)\r\n", 22);
-                // Don't need to worry about inserting potholes               
+                sprintf(temp_buff, "%f\r\n", getAccDiff());
+                bleWriteUART(temp_buff, strlen(temp_buff));
+                // Don't need to worry about inserting potholes
+                canDet = 0;
                 // Reset any flags
                 resetAccPotholeDet();
             }

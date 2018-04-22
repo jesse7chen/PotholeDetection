@@ -7,8 +7,8 @@
 // #define BLE_DEMO 1
 // #define DATABASE_TEST 1
 // #define DISTANCE_TEST 1
-#define DEMO 1
-// #define ACC_DEMO 1
+// #define DEMO 1
+#define ACC_DEMO 1
 
 
 #endif /* _CONFIG_H_ */
