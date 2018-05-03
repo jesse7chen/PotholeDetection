@@ -15,8 +15,8 @@ static float diff;
 #define PRESCALE (400000-1) //48000 PCLK clock cycles to increment TC by 1 
 
 #define ACCEL_SENSITIVITY 0.047
-//#define THRESHOLD .5
 #define THRESHOLD 1.9
+//#define THRESHOLD 1.0
 
 #define ACCEL_SENSITIVITY 0.047
 

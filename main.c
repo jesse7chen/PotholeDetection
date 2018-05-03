@@ -107,7 +107,7 @@ int main(){
     NVIC_SetPriority(UART_IRQn, 0);
     // Set camera interrupt priority
     NVIC_SetPriority(EINT1_IRQn, 0);
-           
+               
     databaseInit();
         
     while(1){
@@ -194,6 +194,8 @@ int main(){
             
             // See if report button was pressed (potDet)
             else if(getLastPressed() == 0){
+                // Warn user to simulate camera detect
+                // hapticWarnUser();
                 curr_location = getCurrLocation();
                 if(curr_location.status != valid){
                     bleWriteUART("GPS location not yet valid\r\n", 28);
@@ -228,14 +230,15 @@ int main(){
             // Check if the parsing succeeded and valid data is ready
             if(getGPSstatus()){
                 resetGPSstatus();
-                canDet = 1;
+                //canDet = 1;
                 
                 curr_location = getCurrLocation();
                 // Write location to BLE for debugging
                 //bleWriteLocation(curr_location);                  
                 // Search database (potEnc)
+                
                 if (searchDatabase(curr_location) == 1){
-                    bleWriteUART("ALERT\r\n", 7); 
+                    //bleWriteUART("ALERT\r\n", 7); 
                     hapticWarnUser();
                 }
                 // Don't need to check for previous pothole
@@ -265,7 +268,7 @@ int main(){
                 sprintf(temp_buff, "%f\r\n", getAccDiff());
                 bleWriteUART(temp_buff, strlen(temp_buff));
                 // Don't need to worry about inserting potholes
-                canDet = 0;
+                //canDet = 0;
                 // Reset any flags
                 resetAccPotholeDet();
             }

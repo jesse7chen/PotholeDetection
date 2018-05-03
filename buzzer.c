@@ -10,17 +10,17 @@ void buzzerInit(void){
     // Set port 1_4 to output
     LPC_GPIO1->DIR |= (1UL << 4);
     // Set port 1_4 high to stop buzzer
-    LPC_GPIO1->DATA |= (1<<4);
+    LPC_GPIO1->DATA |= (1<<5);
     // Set GPIO pin low
     buzzerOff();
 }
 
 void buzzerOn(void){
-	LPC_GPIO1->DATA &= ~(1<<5);
+	LPC_GPIO1->DATA &= ~(1<<4);
 }
 
 void buzzerOff(void){						 
-	LPC_GPIO1->DATA |= (1<<5);
+	LPC_GPIO1->DATA |= (1<<4);
 }
 
 void hapticWarnUser(void){

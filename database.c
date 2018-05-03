@@ -24,7 +24,7 @@ static uint8_t warningStatus = 0;
 // Threshold is 25m
 static double distThreshold = 25.0;
 // Our bearing should be within this many degrees of expected bearing to trigger warning
-static double bearingThreshold = 60;
+static double bearingThreshold = 70;
 
 // For use in stage 2
 #define MAX_DANGEROUS_POTHOLES 3
