@@ -6,3 +6,4 @@
 • Built on LPC1114 (ARM Cortex M0) with a BeagleBone Black used for computer vision processing.
 
 See wiki for more details
+
