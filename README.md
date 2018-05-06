@@ -54,7 +54,7 @@ The GPS communicates via UART, so we implemented an interrupt-based UART driver 
 - Upon finding end characters: Tell system there is a valid message to be parsed. Check data validity field and verify checksum.
 - If previous tasks pass, parse message into static structure.
 
-## Bluetooth
+### Bluetooth
 Module: Bluefruit LE SPI Friend
 
 The bluetooth simulated upload to a cloud database and also provided a convenient method of debugging. A basic SPI driver was written for it, which was wrapped by a higher level SDEP driver. There are a few quirks required to work with this module including:
@@ -62,7 +62,7 @@ The bluetooth simulated upload to a cloud database and also provided a convenien
 - Rather than toggling the CS line every byte, the CS line had to be asserted for the entirely of a packet, which could be up to 20 bytes
 - Seemingly random 4ms delay had to be added between each packet (though this was probably to give time for the module to send data back to the MCU)
 
-## Database
+### Database
 The database stores all our known potholes and searches for potholes that the user is in danger of hitting.
 
 The search feature works in two stages:
