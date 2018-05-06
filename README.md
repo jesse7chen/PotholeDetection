@@ -26,6 +26,14 @@ Every time we receive a new GPS location, we check it against our local database
 
 In order to avoid overcrowding the database, we set a flag upon detecting a pothole which prevents us from reporting another pothole until the user has moved at least 10 m away from the previous pothole. 
 
+### System Photos
+<img src="https://github.com/jesse7chen/PotholeDetection/blob/master/imgs/Top%20System.jpg" width="480">
+Top view
+<img src="https://github.com/jesse7chen/PotholeDetection/blob/master/imgs/Handle%20Bar%20system2.jpg" width="480">
+Side view
+
+As you can see, the system is meant to be mounted on the bikes handlebars.
+
 ## Methods of Detection
 ### Accelerometer
 Module: MMA7660FCT
@@ -88,3 +96,15 @@ Therefore, we utilize the first 256 bytes of our database to store the current i
 
 When we store new potholes in our database, we must take care to pad it with previous pothole data and 0xFF's to avoid modifying any unnecessary bits.
 
+## Physical Design
+### Schematic
+<img src="https://github.com/jesse7chen/PotholeDetection/blob/master/imgs/Control%20Module.PNG" width="960">
+
+### PCB
+<img src="https://github.com/jesse7chen/PotholeDetection/blob/master/imgs/PCB.PNG" width="700">
+
+### 3D Printed Mount
+<img src="https://github.com/jesse7chen/PotholeDetection/blob/master/imgs/3dmodelbody.PNG" width="960">
+Main mount
+<img src="https://github.com/jesse7chen/PotholeDetection/blob/master/imgs/3dcam.PNG" width = "480">
+Camera mount
