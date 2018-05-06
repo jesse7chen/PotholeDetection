@@ -37,6 +37,7 @@ The algorithm utilized to detect potholes was the simple z-differential algorith
 With a threshold of 1.9 Gs, we were able to detect major potholes and had nearly no false positives (>95% accuracy).
 
 ### Computer Vision
+See final report PDF.
 
 ### Manual Reporting
 In the case where the user spotted the pothole and computer vision did not, we allow the user to manually report the pothole using a button mounted on the handlebar of the bike.
