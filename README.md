@@ -37,11 +37,18 @@ Side view
 
 As you can see, the system is meant to be mounted on the bikes handlebars.
 
-### Demo Videos
+### Main Demo Videos
+Accererometer Detection + Nearby Pothole Alert Demo
+
+[![Demo Video](https://img.youtube.com/vi/r6DLgzwXEwc/0.jpg)](https://youtu.be/r6DLgzwXEwc)
+
 Nearby Pothole Alert Demo
 
 [![Demo Video](https://img.youtube.com/vi/jkjBhqxgffA/0.jpg)](https://youtu.be/jkjBhqxgffA)
 
+Accelerometer Demo (look at bottom of phone screen to see that the pothole was detected)
+
+[![Demo Video](https://img.youtube.com/vi/9h0uMwb1o3E/0.jpg)](https://youtu.be/9h0uMwb1o3E)
 
 ## Methods of Detection
 ### Accelerometer
@@ -120,3 +127,18 @@ Main mount
 Camera mount
 
 <img src="https://github.com/jesse7chen/PotholeDetection/blob/master/imgs/3dcam.PNG" width = "480">
+
+## Additional Demo Videos
+Full playlist of demos can be found [here](https://www.youtube.com/playlist?list=PL9imQhiwCe0fOyAjjxw4vcOPIk4TiATaH)
+
+Demonstrating that database remains after power cycle
+
+[![Demo Video](https://img.youtube.com/vi/pUO2MMN-PtQ/0.jpg)](https://youtu.be/pUO2MMN-PtQ)
+
+Additional nearby pothole alert demo
+
+[![Demo Video](https://img.youtube.com/vi/3CjQbx19XfQ/0.jpg)](https://youtu.be/3CjQbx19XfQ)
+
+Extended Accelerometer Demo
+
+[![Demo Video](https://img.youtube.com/vi/ZZC9G7tS7Gs/0.jpg)](https://youtu.be/ZZC9G7tS7Gs)
