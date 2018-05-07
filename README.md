@@ -142,3 +142,5 @@ Additional nearby pothole alert demo
 Extended Accelerometer Demo
 
 [![Demo Video](https://img.youtube.com/vi/ZZC9G7tS7Gs/0.jpg)](https://youtu.be/ZZC9G7tS7Gs)
+
+All code written from scratch with the exception of the simple_strtod function in GPS.c which was based upon the function laid out [here](https://stackoverflow.com/questions/44238420/armcc-5-optimization-of-strtol-and-strtod).
